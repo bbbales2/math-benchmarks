@@ -9,12 +9,12 @@
 #define CAST_VAR stan::math::promote_scalar<var>
 #else
 #define CAST_VAR make_var_value
-#endif
 
 template <typename T>
 auto make_var_value(const T& x) {
   return stan::math::var_value<T>(x);
 }
+#endif
 
 template <typename F_init, typename F_run>
 static void callback_bench_impl(F_init init, F_run run, benchmark::State& state) {

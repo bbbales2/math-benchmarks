@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-
 if [ -z "$1" ]
 then
     echo "Must specify branch to check out"
@@ -8,7 +6,7 @@ then
 fi
 
 cd math
-git pull
+git pull --all
 git checkout $1
 make clean-all
 make -f make/standalone math-libs -j8

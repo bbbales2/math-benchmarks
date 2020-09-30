@@ -16,7 +16,7 @@ build_cmd = "./build.sh " + args.branch + (" true" if args.varmat else "")
 subprocess.run(build_cmd.split(" "))
 
 commit = subprocess.check_output("git --git-dir=math/.git rev-parse --short HEAD".split(" ")).strip().decode("utf-8")
-folder = "benchmarks/{0}_{1}_{2}".format(args.branch, commit, "varmat" if args.varmat else "matvar")
+folder = "benchmarks/{0}_{1}_{2}".format(os.path.basename(args.branch), commit, "varmat" if args.varmat else "matvar")
 
 if not os.path.exists("benchmarks"):
     os.mkdir("benchmarks")
