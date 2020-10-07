@@ -4,109 +4,76 @@
 #include "toss_me.hpp"
 #include "callback_bench_impl.hpp"
 
-auto init = [](benchmark::State& state) {
-  using stan::math::var;
+template <typename T1, typename T2, typename T3>
+struct init {
+  auto operator()(benchmark::State& state) {
   using stan::math::exp;
-  using stan::math::promote_scalar;
 
   Eigen::VectorXd y_val = Eigen::VectorXd::Random(state.range(0));
   Eigen::VectorXd mu_val = Eigen::VectorXd::Random(state.range(0));
   Eigen::VectorXd sigma_val = exp(Eigen::VectorXd::Random(state.range(0)));
 
-  return std::make_tuple(CAST_VAR(y_val),
-			 CAST_VAR(mu_val),
-			 CAST_VAR(sigma_val));
+  return std::make_tuple(bench_promote<T1>(y_val),
+			 bench_promote<T2>(mu_val),
+			 bench_promote<T3>(sigma_val));
+  }
 };
 
-auto init_data = [](benchmark::State& state) {
-  using stan::math::var;
-  using stan::math::exp;
-  using stan::math::promote_scalar;
-
-  Eigen::VectorXd y_val = Eigen::VectorXd::Random(state.range(0));
-  Eigen::VectorXd mu_val = Eigen::VectorXd::Random(state.range(0));
-  Eigen::VectorXd sigma_val = exp(Eigen::VectorXd::Random(state.range(0)));
-
-  return std::make_tuple(y_val,
-			 CAST_VAR(mu_val),
-			 CAST_VAR(sigma_val));
-};
-
+template <typename Vectorizer, typename... Args>
 static void double_exponential_lpdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return double_exponential_lpdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void double_exponential_cdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return double_exponential_cdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void double_exponential_lcdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return double_exponential_lcdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void double_exponential_lccdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return double_exponential_lccdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
-static void double_exponential_lpdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return double_exponential_lpdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void double_exponential_cdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return double_exponential_cdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void double_exponential_lcdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return double_exponential_lcdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void double_exponential_lccdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return double_exponential_lccdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-// The start and ending sizes for the benchmark
+using stan::math::var;
 int start_val = 2;
 int end_val = 1024;
 BENCHMARK(toss_me);
-BENCHMARK(double_exponential_lpdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_cdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_lcdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_lccdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_lpdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_cdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_lcdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(double_exponential_lccdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK_MAIN();
+BENCHMARK_TEMPLATE(double_exponential_lpdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lpdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_cdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_cdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lcdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lcdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lccdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lccdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
 
+BENCHMARK_TEMPLATE(double_exponential_lpdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lpdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_cdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_cdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lcdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lcdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lccdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(double_exponential_lccdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_MAIN();

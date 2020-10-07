@@ -4,108 +4,76 @@
 #include "toss_me.hpp"
 #include "callback_bench_impl.hpp"
 
-auto init = [](benchmark::State& state) {
-  using stan::math::var;
-  using stan::math::exp;
-  using stan::math::promote_scalar;
+template <typename T1, typename T2, typename T3>
+struct init {
+  auto operator()(benchmark::State& state) {
+    using stan::math::exp;
 
-  Eigen::VectorXd y_val = exp(Eigen::VectorXd::Random(state.range(0)));
-  Eigen::VectorXd alpha_val = exp(Eigen::VectorXd::Random(state.range(0)));
-  Eigen::VectorXd sigma_val = exp(Eigen::VectorXd::Random(state.range(0)));
+    Eigen::VectorXd y_val = exp(Eigen::VectorXd::Random(state.range(0)));
+    Eigen::VectorXd alpha_val = exp(Eigen::VectorXd::Random(state.range(0)));
+    Eigen::VectorXd sigma_val = exp(Eigen::VectorXd::Random(state.range(0)));
 
-  return std::make_tuple(CAST_VAR(y_val),
-			 CAST_VAR(alpha_val),
-			 CAST_VAR(sigma_val));
+    return std::make_tuple(bench_promote<T1>(y_val),
+  			 bench_promote<T2>(alpha_val),
+  			 bench_promote<T3>(sigma_val));
+  }
 };
 
-auto init_data = [](benchmark::State& state) {
-  using stan::math::var;
-  using stan::math::exp;
-  using stan::math::promote_scalar;
-
-  Eigen::VectorXd y_val = exp(Eigen::VectorXd::Random(state.range(0)));
-  Eigen::VectorXd alpha_val = exp(Eigen::VectorXd::Random(state.range(0)));
-  Eigen::VectorXd sigma_val = exp(Eigen::VectorXd::Random(state.range(0)));
-
-  return std::make_tuple(y_val,
-			 CAST_VAR(alpha_val),
-			 CAST_VAR(sigma_val));
-};
-
+template <typename Vectorizer, typename... Args>
 static void frechet_lpdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return frechet_lpdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void frechet_cdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return frechet_cdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void frechet_lcdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return frechet_lcdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
+template <typename Vectorizer, typename... Args>
 static void frechet_lccdf(benchmark::State& state) {
   auto run = [](const auto&... args) {
     return frechet_lccdf(args...);
   };
 
-  callback_bench_impl(init, run, state);
+  callback_bench_impl<Vectorizer>(init<Args...>(), run, state);
 }
 
-static void frechet_lpdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return frechet_lpdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void frechet_cdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return frechet_cdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void frechet_lcdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return frechet_lcdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-static void frechet_lccdf_data(benchmark::State& state) {
-  auto run = [](const auto&... args) {
-    return frechet_lccdf(args...);
-  };
-
-  callback_bench_impl(init_data, run, state);
-}
-
-// The start and ending sizes for the benchmark
+using stan::math::var;
 int start_val = 2;
 int end_val = 1024;
 BENCHMARK(toss_me);
-BENCHMARK(frechet_lpdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_cdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_lcdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_lccdf)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_lpdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_cdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_lcdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(frechet_lccdf_data)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lpdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lpdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_cdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_cdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lcdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lcdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lccdf,non_vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lccdf,vec,var,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+
+BENCHMARK_TEMPLATE(frechet_lpdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lpdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_cdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_cdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lcdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lcdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lccdf,non_vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK_TEMPLATE(frechet_lccdf,vec,double,var,var)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
 BENCHMARK_MAIN();
