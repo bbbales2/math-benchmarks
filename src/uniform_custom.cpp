@@ -57,10 +57,9 @@ static void uniform_custom_vectorized(benchmark::State& state) {
   }
 }
 
-int start_val = 2;
+int start_val = 1024;
 int end_val = 1024;
-BENCHMARK(toss_me);
-BENCHMARK(uniform_custom_nonvectorized)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
-BENCHMARK(uniform_custom_vectorized)->RangeMultiplier(2)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK(uniform_custom_nonvectorized)->RangeMultiplier(16)->Range(start_val, end_val)->UseManualTime();
+BENCHMARK(uniform_custom_vectorized)->RangeMultiplier(16)->Range(start_val, end_val)->UseManualTime();
 BENCHMARK_MAIN();
 
