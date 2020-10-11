@@ -18,7 +18,7 @@ static void uniform_custom_nonvectorized(benchmark::State& state) {
     auto start = std::chrono::high_resolution_clock::now();
     var lp = 0.0;
     for(size_t i = 0; i < alpha.size(); ++i) {
-      lp += uniform_lpdf(y.coeff(i), alpha.coeff(i), beta.coeff(i));
+      lp += uniform_lcdf(y.coeff(i), alpha.coeff(i), beta.coeff(i));
     }
     lp.grad();
     auto end = std::chrono::high_resolution_clock::now();
@@ -45,7 +45,7 @@ static void uniform_custom_vectorized(benchmark::State& state) {
     auto y = stan::math::promote_scalar<stan::math::var>(y_val).eval();
 
     auto start = std::chrono::high_resolution_clock::now();
-    var lp = uniform_lpdf(y, alpha, beta);
+    var lp = uniform_lcdf(y, alpha, beta);
     lp.grad();
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_seconds =
@@ -57,8 +57,8 @@ static void uniform_custom_vectorized(benchmark::State& state) {
   }
 }
 
-int start_val = 1024;
-int end_val = 1024;
+int start_val = 2;
+int end_val = 2;
 BENCHMARK(uniform_custom_nonvectorized)->RangeMultiplier(16)->Range(start_val, end_val)->UseManualTime();
 BENCHMARK(uniform_custom_vectorized)->RangeMultiplier(16)->Range(start_val, end_val)->UseManualTime();
 BENCHMARK_MAIN();
